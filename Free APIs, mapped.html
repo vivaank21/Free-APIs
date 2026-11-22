@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Free APIs, mapped</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700&family=Figtree:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#e9ebfb;--glow1:#c9d0ff;--glow2:#ffd3ea;--ink:#141a45;--mute:#4a5088;
+  --glass:rgba(255,255,255,.62);--glass-bd:rgba(20,26,69,.14);--track:rgba(20,26,69,.18);
+  --c-none:#0a8fb8;--c-key:#c96f00;--c-opt:#c42a7c;
+  box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#070b24;--glow1:#1b2a8a;--glow2:#4a1450;--ink:#eaedff;--mute:#98a0d8;
+    --glass:rgba(255,255,255,.07);--glass-bd:rgba(255,255,255,.16);--track:rgba(255,255,255,.14);
+    --c-none:#4de1ff;--c-key:#ffb454;--c-opt:#ff6fb5;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#070b24;--glow1:#1b2a8a;--glow2:#4a1450;--ink:#eaedff;--mute:#98a0d8;
+  --glass:rgba(255,255,255,.07);--glass-bd:rgba(255,255,255,.16);--track:rgba(255,255,255,.14);
+  --c-none:#4de1ff;--c-key:#ffb454;--c-opt:#ff6fb5;
+}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;color:var(--ink);font-family:"Figtree",system-ui,sans-serif;
+  background:radial-gradient(60% 50% at 25% 30%,var(--glow1),transparent 70%),radial-gradient(45% 40% at 85% 85%,var(--glow2),transparent 70%),var(--bg)}
+.app{display:grid;grid-template-columns:minmax(0,1fr) 380px;gap:28px;max-width:1560px;margin:0 auto;padding:20px 28px;align-items:center;min-height:100vh}
+.stage{min-width:0}
+svg{display:block;width:100%;height:auto;max-height:calc(100vh - 40px);margin:0 auto;aspect-ratio:1;cursor:default}
+h1{font-family:"Unbounded",system-ui,sans-serif;font-weight:700;font-size:clamp(26px,3vw,38px);line-height:1.12;margin:0 0 14px;letter-spacing:-.01em}
+.sub{margin:0 0 22px;color:var(--mute);font-size:17px;line-height:1.5;max-width:34ch}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:22px}
+.chip{font:600 14px "Figtree",system-ui,sans-serif;color:var(--ink);background:var(--glass);border:1px solid var(--glass-bd);border-radius:999px;padding:8px 14px;cursor:pointer;display:inline-flex;align-items:center;gap:8px;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
+.chip i{width:10px;height:10px;border-radius:50%;background:var(--c,var(--mute));display:inline-block}
+.chip[aria-pressed="true"]{border-color:var(--c,var(--ink));box-shadow:0 0 0 1px var(--c,var(--ink)) inset}
+.chip.none{--c:var(--c-none)}.chip.key{--c:var(--c-key)}.chip.opt{--c:var(--c-opt)}
+.card{background:var(--glass);border:1px solid var(--glass-bd);border-radius:26px;padding:26px 26px 24px;backdrop-filter:blur(22px);-webkit-backdrop-filter:blur(22px);min-height:290px}
+.card .cat-l{margin:0 0 10px;color:var(--mute);font-size:15px}
+.card h2{font-family:"Unbounded",system-ui,sans-serif;font-weight:500;font-size:clamp(26px,2.6vw,34px);line-height:1.12;margin:0 0 14px;overflow-wrap:anywhere}
+.card p.d{margin:0 0 18px;font-size:19px;line-height:1.5}
+.badge{display:inline-block;font-weight:600;font-size:15px;padding:6px 14px;border-radius:999px;border:1.5px solid var(--c);color:var(--c)}
+.card .n{margin:16px 0 0;color:var(--mute);font-size:16px;line-height:1.5}
+.zoomout{margin-top:18px;font:600 15px "Figtree",system-ui,sans-serif;color:var(--ink);background:transparent;border:1px solid var(--glass-bd);border-radius:12px;padding:9px 16px;cursor:pointer}
+.zoomout[hidden]{display:none}
+.foot{margin:18px 2px 0;color:var(--mute);font-size:14px;line-height:1.5}
+button:focus-visible,.node:focus-visible,.catg:focus-visible{outline:3px solid var(--ink);outline-offset:3px}
+.node:focus{outline:none}
+.node:focus-visible .dot{stroke:var(--ink);stroke-width:3}
+
+#world{transform-origin:0 0;transition:transform 1s cubic-bezier(.65,0,.2,1)}
+.track{fill:none;stroke:var(--track);stroke-width:1;stroke-dasharray:2 7}
+.band{fill:none;stroke:var(--mute);stroke-width:3;stroke-linecap:round;opacity:.6}
+.cat{font:600 12.5px "Figtree",system-ui,sans-serif;fill:var(--mute);letter-spacing:.02em}
+.catg{cursor:pointer}
+.catg:hover .band{opacity:1;stroke:var(--ink)}
+.catg:hover .cat{fill:var(--ink)}
+.hubc{fill:var(--glass);stroke:var(--glass-bd);stroke-width:1.5}
+.hubn{font:700 72px "Unbounded",system-ui,sans-serif;fill:var(--ink)}
+.hubt{font:600 16px "Figtree",system-ui,sans-serif;fill:var(--mute)}
+.a-none{--c:var(--c-none)}.a-key{--c:var(--c-key)}.a-opt{--c:var(--c-opt)}
+.node{cursor:pointer;transition:opacity .35s;animation:pop .7s both;animation-delay:calc(var(--i)*38ms + 200ms)}
+.node.dim{opacity:.12}
+.spoke{stroke:var(--c);stroke-width:1.5;opacity:.5}
+.dot{fill:var(--c);stroke:var(--bg);stroke-width:2;transform-box:fill-box;transform-origin:center;transition:transform .25s;filter:drop-shadow(0 0 6px var(--c))}
+.lab{font:600 14px "Figtree",system-ui,sans-serif;fill:var(--ink);opacity:.82;transition:opacity .2s}
+.node:hover .dot,.node.on .dot,.node:focus-visible .dot{transform:scale(1.9)}
+.node:hover .lab,.node.on .lab{opacity:1;font-weight:700}
+@keyframes pop{from{opacity:0}}
+@media (max-width:920px){
+  .app{grid-template-columns:1fr;padding:14px 16px;gap:18px;min-height:0}
+  svg{max-height:none}
+  .card{min-height:0}
+}
+@media (prefers-reduced-motion:reduce){
+  #world{transition:none}.node{animation:none}.dot{transition:none}
+}
+</style>
+</head>
+<body>
+<main class="app">
+  <section class="stage">
+    <svg id="svg" viewBox="0 0 1000 1000" role="group" aria-label="Radial map of 29 free APIs grouped into 9 categories, coloured by authentication need">
+      <g id="world"></g>
+    </svg>
+  </section>
+  <aside class="side">
+    <h1>29 free APIs, mapped by what they do</h1>
+    <p class="sub">Each dot is one API. Its colour shows what you need before the first request.</p>
+    <div class="chips" id="chips" role="group" aria-label="Filter by authentication"></div>
+    <article class="card" id="card" aria-live="polite"></article>
+    <button class="zoomout" id="zo" hidden>Zoom out</button>
+    <p class="foot">Free-tier limits change often. Check each provider’s docs before you build on one.</p>
+  </aside>
+</main>
+<script>
+const D=[
+["Weather","Open-Meteo","Open-Meteo","Forecasts, historical weather, air quality","None",""],
+["Weather","OpenWeatherMap","OpenWeatherMap","Current weather and forecasts","Free key",""],
+["Weather","wttr.in","wttr.in","Simple text and JSON weather","None",""],
+["Maps & Geo","Nominatim (OpenStreetMap)","Nominatim","Geocoding and reverse geocoding","None","Strict usage policy. Send a valid User-Agent."],
+["Maps & Geo","Overpass API","Overpass","Query OpenStreetMap data such as points of interest and roads","None",""],
+["Maps & Geo","REST Countries","REST Countries","Country data, flags, currencies","None",""],
+["Maps & Geo","ipapi.co / ip-api.com","ipapi / ip-api","IP geolocation","None","Rate-limited."],
+["Images","Unsplash","Unsplash","High-quality photo search","Free key",""],
+["Images","Pexels","Pexels","Photos and videos","Free key",""],
+["Images","Pixabay","Pixabay","Images, videos, illustrations","Free key",""],
+["Finance","CoinGecko","CoinGecko","Crypto prices and market data","None","A free key is optional."],
+["Finance","Frankfurter","Frankfurter","Currency exchange rates","None",""],
+["Finance","Alpha Vantage","Alpha Vantage","Stock market data","Free key",""],
+["News & Content","NewsAPI","NewsAPI","Headlines and article search","Free key","Development use only on the free tier."],
+["News & Content","Hacker News API","Hacker News","Stories, comments, users","None",""],
+["News & Content","Wikipedia / Wikimedia REST","Wikimedia REST","Article summaries and search","None",""],
+["Dev & Data","GitHub REST API","GitHub REST","Repos, users, issues","Optional token","A token raises your rate limit."],
+["Dev & Data","JSONPlaceholder","JSONPlaceholder","Fake REST data for testing","None",""],
+["Dev & Data","PokéAPI","PokéAPI","Pokémon data, great for practice","None",""],
+["Dev & Data","httpbin","httpbin","Test HTTP requests and responses","None",""],
+["Entertainment","TMDB","TMDB","Movie and TV metadata","Free key",""],
+["Entertainment","Open Library","Open Library","Books, authors, covers","None",""],
+["Entertainment","Jikan","Jikan","Anime and manga data from MyAnimeList","None",""],
+["Utilities","QR Server","QR Server","Generate QR codes","None",""],
+["Utilities","Dictionary API (dictionaryapi.dev)","Dictionary API","Word definitions","None",""],
+["Utilities","Nager.Date","Nager.Date","Public holidays by country","None",""],
+["Utilities","Random User","Random User","Fake user profiles","None",""],
+["AI / ML","Hugging Face Inference API","Hugging Face","Hosted open models","Free token","Limited free usage."],
+["AI / ML","Google Gemini API","Gemini","LLM access","Free tier key",""]
+];
+const NS="http://www.w3.org/2000/svg",$=s=>document.querySelector(s);
+const el=(t,a,p)=>{const e=document.createElementNS(NS,t);for(const k in a)e.setAttribute(k,a[k]);if(p)p.appendChild(e);return e};
+const rad=d=>d*Math.PI/180,P=(r,d)=>[500+r*Math.cos(rad(d)),500+r*Math.sin(rad(d))];
+const cls=a=>a==="None"?"none":a==="Optional token"?"opt":"key";
+const world=$("#world"),svg=$("#svg"),card=$("#card"),zo=$("#zo");
+const defs=el("defs",{},svg);svg.insertBefore(defs,world);
+
+el("circle",{cx:500,cy:500,r:250,class:"track"},world);
+el("circle",{cx:500,cy:500,r:140,class:"track"},world);
+
+const cats=[...new Set(D.map(d=>d[0]))],GAP=5,step=(360-GAP*cats.length)/D.length;
+let a=-90+GAP/2,idx=0;const nodes=[];let locked=null;
+
+function zoom(x,y,k){world.style.transform="translate("+(500-k*x)+"px,"+(500-k*y)+"px) scale("+k+")";zo.hidden=false}
+function reset(){world.style.transform="translate(0px,0px) scale(1)";zo.hidden=true;locked=null;nodes.forEach(n=>n.g.classList.remove("on"));paint(null)}
+
+function paint(d){
+  if(!d){card.innerHTML='<p class="cat-l">Start anywhere</p><h2>Pick a dot</h2><p class="d">Hover a dot to read about it. Click one to zoom in, or click a category name to zoom into its group.</p>';return}
+  const c=cls(d[4]);
+  card.innerHTML='<p class="cat-l"></p><h2></h2><p class="d"></p><span class="badge a-'+c+'"></span><p class="n"></p>';
+  card.querySelector(".cat-l").textContent=d[0];
+  card.querySelector("h2").textContent=d[1];
+  card.querySelector(".d").textContent=d[3];
+  card.querySelector(".badge").textContent=d[4]==="None"?"No key needed":d[4];
+  const n=card.querySelector(".n");d[5]?n.textContent=d[5]:n.remove();
+}
+
+cats.forEach((c,ci)=>{
+  const items=D.filter(d=>d[0]===c),s=a,e=a+items.length*step,m=(s+e)/2;
+  const cg=el("g",{class:"catg",tabindex:0,role:"button","aria-label":"Zoom into "+c},world);
+  const p1=P(200,s+.8),p2=P(200,e-.8);
+  el("path",{d:"M"+p1[0]+" "+p1[1]+"A200 200 0 0 1 "+p2[0]+" "+p2[1],class:"band"},cg);
+  const low=Math.sin(rad(m))>0,rl=low?194:179,id="cp"+ci;
+  const q1=P(rl,s+.8),q2=P(rl,e-.8);
+  el("path",{id:id,d:low?"M"+q2[0]+" "+q2[1]+"A"+rl+" "+rl+" 0 0 0 "+q1[0]+" "+q1[1]:"M"+q1[0]+" "+q1[1]+"A"+rl+" "+rl+" 0 0 1 "+q2[0]+" "+q2[1],fill:"none"},defs);
+  const t=el("text",{class:"cat"},cg),tp=el("textPath",{href:"#"+id,startOffset:"50%","text-anchor":"middle"},t);
+  tp.textContent=c;
+  const go=()=>{const p=P(250,m);locked=null;nodes.forEach(n=>n.g.classList.remove("on"));paint(null);zoom(p[0],p[1],2.1)};
+  cg.addEventListener("click",ev=>{ev.stopPropagation();go()});
+  cg.addEventListener("keydown",ev=>{if(ev.key==="Enter"||ev.key===" "){ev.preventDefault();go()}});
+  items.forEach((d,j)=>{
+    const ang=s+(j+.5)*step,n=P(250,ang),sp=P(206,ang),left=Math.cos(rad(ang))<0,lp=P(274,ang);
+    const g=el("g",{class:"node a-"+cls(d[4]),tabindex:0,role:"button","aria-label":d[1]+", "+d[4]},world);
+    g.style.setProperty("--i",idx++);
+    el("line",{x1:sp[0],y1:sp[1],x2:n[0],y2:n[1],class:"spoke"},g);
+    el("circle",{cx:n[0],cy:n[1],r:8,class:"dot"},g);
+    el("circle",{cx:n[0],cy:n[1],r:20,fill:"transparent"},g);
+    const tx=el("text",{x:lp[0],y:lp[1],class:"lab","text-anchor":left?"end":"start","dominant-baseline":"central",transform:"rotate("+(left?ang+180:ang)+" "+lp[0]+" "+lp[1]+")"},g);
+    tx.textContent=d[2];
+    const pick=()=>{locked=d;nodes.forEach(o=>o.g.classList.toggle("on",o.g===g));paint(d);zoom(n[0],n[1],2.6)};
+    g.addEventListener("mouseenter",()=>paint(d));
+    g.addEventListener("mouseleave",()=>paint(locked));
+    g.addEventListener("focus",()=>paint(d));
+    g.addEventListener("click",ev=>{ev.stopPropagation();pick()});
+    g.addEventListener("keydown",ev=>{if(ev.key==="Enter"||ev.key===" "){ev.preventDefault();pick()}});
+    nodes.push({g:g,d:d});
+  });
+  a=e+GAP;
+});
+
+const hub=el("g",{},world);
+el("circle",{cx:500,cy:500,r:100,class:"hubc"},hub);
+el("text",{x:500,y:512,"text-anchor":"middle",class:"hubn"},hub).textContent=D.length;
+el("text",{x:500,y:552,"text-anchor":"middle",class:"hubt"},hub).textContent="free APIs";
+
+const F=[["all","All",null],["none","No key","none"],["key","Free key or token","key"],["opt","Optional token","opt"]];
+const chips=$("#chips");
+F.forEach(f=>{
+  const n=f[0]==="all"?D.length:D.filter(d=>cls(d[4])===f[0]).length;
+  const b=document.createElement("button");b.className="chip "+f[0];b.type="button";
+  b.setAttribute("aria-pressed",f[0]==="all"?"true":"false");
+  b.innerHTML=(f[2]?"<i></i>":"")+f[1]+" ("+n+")";
+  b.addEventListener("click",()=>{
+    chips.querySelectorAll(".chip").forEach(c=>c.setAttribute("aria-pressed",c===b?"true":"false"));
+    nodes.forEach(o=>o.g.classList.toggle("dim",f[0]!=="all"&&cls(o.d[4])!==f[0]));
+  });
+  chips.appendChild(b);
+});
+
+zo.addEventListener("click",reset);
+svg.addEventListener("click",reset);
+document.addEventListener("keydown",e=>{if(e.key==="Escape")reset()});
+paint(null);
+</script>
+</body>
+</html>
